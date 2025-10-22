@@ -24,10 +24,10 @@ export default function Page() {
   //เนื้อหาถูกโหลด ให้ดึงข้อมูลจาก supabase มาแสดงที่หน้าเพจ
   useEffect(() => {
     async function fetchTasks() {
-      //ไปดึงข้อมูลจาก task ใน Firebase
+      // ไปดึงข้อมูลจาก task ใน Firebase
       const result = await getDocs(collection(firebasedb, "task"));
 
-      //เอาข้อมูลที่อยู่ใน result ไปกำหนดค่าให้กับตัวแปร state: tasks
+      // เอาข้อมูลที่อยู่ใน result ไปกำหนดค่าให้กับตัวแปร state: tasks
       setTasks(
         result.docs.map((doc) => ({
           id: doc.id,
@@ -40,7 +40,8 @@ export default function Page() {
         }))
       );
     }
-    
+    // เรียกใช้งานฟังก์ชัน fetchTasks
+    fetchTasks();
   }, []);
 
   //ฟังก์ชันลบงาน
