@@ -5,7 +5,8 @@ import task from "../../assets/task.png";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { firebasedb } from "@/lib/firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs , deleteDoc, doc } from "firebase/firestore";
+import { supabase } from "@/lib/supabaseClient";
 
 type Task = {
   id: string;
@@ -46,8 +47,38 @@ export default function Page() {
 
   //ฟังก์ชันลบงาน
   async function handleDeleteTaskClick(id: string, image_url: string) {
-    //แสดง confirm dialog เพื่อให้ผู้ใช้ยืนยันการลบงาน
-    
+    // แสดง confirm dialog เพื่อให้ผู้ใช้ยืนยันการลบงาน
+    if (window.confirm("คุณต้องการลบงานนี้ใช่หรือไม่?")) {
+      try {
+        // ลบข้อมูล document ใน Firestore
+        await deleteDoc(doc(firebasedb, "task", id));
+
+        // ตรวจสอบว่ามี image_url หรือไม่ ถ้ามีให้ลบรูปใน Storage ด้วย
+        if (image_url) {
+          // แยกชื่อไฟล์ออกจาก URL
+          const fileName = image_url.split("/").pop();
+          if (fileName) {
+            const { error: storageError } = await supabase.storage
+              .from("task_bk") // Ensure this bucket name is correct
+              .remove([fileName]);
+
+            if (storageError) {
+              console.error("Error removing image from storage:", storageError.message);
+              // Handle error, maybe notify user but don't block UI refresh
+            }
+          }
+        }
+
+        alert("ลบงานเรียบร้อยแล้ว");
+        // Optional: Refetch tasks or remove the task from the local state
+         setTasks(Tasks.filter(task => task.id !== id)); // Update local state directly
+        // await fetchTasks(); // Or refetch all tasks
+
+      } catch (error) {
+        console.error("Error deleting task:", error);
+        alert("เกิดข้อผิดพลาดในการลบงาน");
+      }
+    }
   }
   return (
     <div className="flex flex-col w-10/12 mx-auto">
